@@ -33,7 +33,8 @@
     "plugins": [
       "expo-router",
       "react-native-pytorch-core",
-      "onnxruntime-react-native"
+      "onnxruntime-react-native",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

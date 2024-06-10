@@ -1,17 +1,17 @@
+import axios from "axios";
+import { Camera } from "expo-camera";
+import * as FileSystem from "expo-file-system";
+import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Alert,
   Button,
   Image,
   StyleSheet,
-  Alert,
   TextInput,
-  ActivityIndicator,
+  View,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import { Camera } from "expo-camera";
-import axios from "axios";
-import * as FileSystem from "expo-file-system";
 
 axios.interceptors.request.use((request) => {
   console.log("Starting Request", JSON.stringify(request, null, 2));
@@ -90,6 +90,7 @@ export default function TileColorVisualizerScreen() {
       const base64 = await FileSystem.readAsStringAsync(selectedImage, {
         encoding: "base64",
       });
+
       const formData = new FormData();
       formData.append("file", "data:image/jpeg;base64," + base64);
       formData.append("r", r.toString());
@@ -101,11 +102,31 @@ export default function TileColorVisualizerScreen() {
         body: formData,
       });
 
+      console.log("🚀 ~ sendImageForColorChange ~ response:", response);
+
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
+
+      // Uncomment when received expected response as an image
+      // const contentType = response.headers.get("content-type");
+      // if (!contentType || !contentType.startsWith("image/")) {
+      //   const textResponse = await response.text();
+      //   console.error("Server did not return an image:", textResponse);
+      //   Alert.alert(
+      //     "Error",
+      //     "Server did not return an image. Please check the server logs."
+      //   );
+      //   return;
+      // }
+
       const blob = await response.blob();
+
       const reader = new FileReader();
       reader.onloadend = () => {
-        // Ensure the result is treated as a string
         const base64data = reader.result;
+        console.log("🚀 ~ API Response for getting filtered image -> ", reader);
+
         if (typeof base64data === "string") {
           setSelectedImage(base64data);
         } else {
@@ -114,6 +135,7 @@ export default function TileColorVisualizerScreen() {
           );
         }
       };
+
       reader.readAsDataURL(blob);
     } catch (error) {
       console.error("Upload failed:", error);
